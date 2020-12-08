@@ -7,7 +7,7 @@ import lombok.experimental.FieldDefaults;
 
 /**
  * Exceção genérica para facilitar captura de problemas ocorridos em decorrência de regras de
- * negócio não satisfeitas durante uma movimentação de valores.
+ * negócio não satisfeitas durante uma movimentação de fundos.
  *
  * @author rmacario
  */

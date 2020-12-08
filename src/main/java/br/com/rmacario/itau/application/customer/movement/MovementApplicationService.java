@@ -28,7 +28,7 @@ public class MovementApplicationService {
     CustomerRepository customerRepository;
 
     /**
-     * Orquestra chamadas de transferências de valores de modo a obter os insumos necessários para
+     * Orquestra chamadas de transferências de fundos de modo a obter os insumos necessários para
      * que a lógica e regras de negócio possam ser aplicadas pelo serviço de domínio.
      *
      * @param solicitation Informações sobre a transferência que será realizada.

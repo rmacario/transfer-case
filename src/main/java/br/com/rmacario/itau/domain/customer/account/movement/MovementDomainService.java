@@ -8,6 +8,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,12 +27,38 @@ public class MovementDomainService {
 
     AccountMovementRepository accountMovementRepository;
 
+    /**
+     * Realiza a transferência de fundos entre as contas informadas.
+     *
+     * <p>Para que a transferência seja feita com sucesso é necessário que:
+     *
+     * <ul>
+     *   <li>Exista uma conta cadastrada para os usuários envolvidos;
+     *   <li>Não haja outra movimentação em andamento;
+     *   <li>O usuário que está realizando a transferência tenha saldo suficiente;
+     * </ul>
+     *
+     * @param accountMovement dados da movimentação que será realizada.
+     * @throws TransferFundsToSameOriginException se a movimentação for realizada de um usuário para
+     *     ele próprio.
+     * @throws InsufficientBalanceException se o usuário não possuir saldo suficiente.
+     * @throws ConcurrentTransferFundsException se houver outra movimentação em andamento para as
+     *     contas envolvidas.
+     */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void transferFunds(@NonNull final AccountMovement accountMovement) {
-        final var accountOrigin =
-                accountRepository.findByIdAndLockEntity(accountMovement.getAccount().getId());
-        final var accountTarget =
-                accountRepository.findByIdAndLockEntity(accountMovement.getAccountTarget().getId());
+        final Account accountOrigin;
+        final Account accountTarget;
+        try {
+            accountOrigin =
+                    accountRepository.findByIdAndLockEntity(accountMovement.getAccount().getId());
+            accountTarget =
+                    accountRepository.findByIdAndLockEntity(
+                            accountMovement.getAccountTarget().getId());
+
+        } catch (final PessimisticLockingFailureException e) {
+            throw new ConcurrentTransferFundsException();
+        }
 
         if (accountOrigin.getId().equals(accountTarget.getId())) {
             accountMovement.setSuccess(false);
@@ -59,8 +86,8 @@ public class MovementDomainService {
     }
 
     /**
-     * Recalcula o saldo em conta do {@link Customer} que está transferindo os valores e adiciona um
-     * {@link AccountMovement} ao histórico de movimentações da conta do mesmo.
+     * Recalcula o saldo em conta do {@link Customer} que está realizando a transferência de fundos
+     * e adiciona um {@link AccountMovement} ao histórico de movimentações da conta do mesmo.
      */
     private void sendFunds(final AccountMovement accountMovement, final Account account) {
         account.subtractBalance(accountMovement.getValue());

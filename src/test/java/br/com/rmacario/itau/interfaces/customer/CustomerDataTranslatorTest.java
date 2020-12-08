@@ -25,7 +25,7 @@ class CustomerDataTranslatorTest {
 
     private static final Long ACCOUNT_NUMBER = 10l;
 
-    private static final BigDecimal ACCOUNT_BALANCE = new BigDecimal(500l);
+    private static final BigDecimal ACCOUNT_BALANCE = BigDecimal.TEN;
 
     private static final ZonedDateTime CREATED_AT = ZonedDateTime.now();
 
