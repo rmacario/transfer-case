@@ -1,6 +1,5 @@
 package br.com.rmacario.itau.application.customer;
 
-import static lombok.AccessLevel.PACKAGE;
 import static lombok.AccessLevel.PRIVATE;
 
 import br.com.rmacario.itau.domain.customer.Customer;
@@ -8,9 +7,11 @@ import br.com.rmacario.itau.domain.customer.CustomerRepository;
 import br.com.rmacario.itau.domain.customer.account.Account;
 import br.com.rmacario.itau.domain.customer.account.AccountRepository;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,13 +23,31 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @FieldDefaults(level = PRIVATE, makeFinal = true)
-@RequiredArgsConstructor(access = PACKAGE, onConstructor_ = @Autowired)
 public class CustomerApplicationService {
 
     CustomerRepository customerRepository;
 
     AccountRepository accountRepository;
 
+    Integer defaultPageSize;
+
+    @Autowired
+    CustomerApplicationService(
+            final CustomerRepository customerRepository,
+            final AccountRepository accountRepository,
+            @Value("${app.repository.pagination.default-size}") final Integer defaultPageSize) {
+        this.customerRepository = customerRepository;
+        this.accountRepository = accountRepository;
+        this.defaultPageSize = defaultPageSize;
+    }
+
+    /**
+     * Realiza o processo de criação de um novo {@link Customer}, incluindo também a {@link Account}
+     * relacionada a ele.
+     *
+     * @param customerData Informações utilizadas na criação do customer.
+     * @return Customer cadastrado.
+     */
     @Transactional
     public Customer create(@NonNull final CustomerCreateSolicitation customerData) {
         final var optionalAccount = accountRepository.findByNumber(customerData.getAccountNumber());
@@ -49,5 +68,16 @@ public class CustomerApplicationService {
                         .bindAccount();
 
         return customerRepository.save(customer);
+    }
+
+    /**
+     * Realiza uma busca paginada, sem filtros e ordenada por ID, pelos {@link Customer}
+     * cadastrados.
+     *
+     * @param page Informações sobre a pagina utilizada na pesquisa.
+     * @return {@link Page} de customers.
+     */
+    public Page<Customer> findAllCustomersByPage(final int page) {
+        return customerRepository.findByOrderByIdAsc(PageRequest.of(page, defaultPageSize));
     }
 }

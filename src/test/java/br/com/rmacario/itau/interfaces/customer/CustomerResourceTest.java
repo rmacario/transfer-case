@@ -1,11 +1,15 @@
 package br.com.rmacario.itau.interfaces.customer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import br.com.rmacario.itau.application.customer.CustomerApplicationService;
 import br.com.rmacario.itau.application.customer.CustomerCreateSolicitation;
 import br.com.rmacario.itau.domain.customer.Customer;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,7 +34,7 @@ class CustomerResourceTest {
 
     @Mock CustomerCreateSolicitation customerCreateSolicitation;
 
-    @Mock CustomerCreateResponse response;
+    @Mock CustomerResponse response;
 
     @Mock Customer customer;
 
@@ -50,5 +55,21 @@ class CustomerResourceTest {
 
         assertEquals(HttpStatus.CREATED, creationResponse.getStatusCode());
         assertEquals(response, creationResponse.getBody());
+    }
+
+    @Test
+    void findAll_twiceCustomersFound_shouldReturnPagedCustomers() {
+        final var page = 1;
+        final var pagedCustomers = new PageImpl<>(List.of(customer, customer));
+        when(customerApplicationService.findAllCustomersByPage(page)).thenReturn(pagedCustomers);
+        when(customerDataTranslator.toCustomerResponse(any())).thenReturn(response, response);
+
+        final var responseEntity = customerResource.findAll(page);
+
+        verify(customerDataTranslator, times(pagedCustomers.getNumberOfElements()))
+                .toCustomerResponse(any());
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(
+                pagedCustomers.getNumberOfElements(), responseEntity.getBody().getTotalElements());
     }
 }

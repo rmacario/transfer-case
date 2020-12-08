@@ -24,13 +24,13 @@ class CustomerDataTranslator {
                 .build();
     }
 
-    /** Converte um {@link Customer} em {@link CustomerCreateResponse}. */
-    CustomerCreateResponse toCustomerResponse(@NonNull final Customer customer) {
-        return CustomerCreateResponse.builder()
+    /** Converte um {@link Customer} em {@link CustomerResponse}. */
+    CustomerResponse toCustomerResponse(@NonNull final Customer customer) {
+        return CustomerResponse.builder()
                 .name(customer.getName())
                 .createdAt(customer.getCreatedAt())
                 .account(
-                        CustomerCreateResponse.AccountResponse.builder()
+                        CustomerResponse.AccountResponse.builder()
                                 .number(customer.getAccount().getNumber())
                                 .balance(customer.getAccount().getBalance())
                                 .build())

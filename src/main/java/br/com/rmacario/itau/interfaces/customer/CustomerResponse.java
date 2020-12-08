@@ -21,7 +21,7 @@ import lombok.experimental.FieldDefaults;
 @EqualsAndHashCode
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-class CustomerCreateResponse {
+class CustomerResponse {
 
     /** Nome do cliente. */
     String name;

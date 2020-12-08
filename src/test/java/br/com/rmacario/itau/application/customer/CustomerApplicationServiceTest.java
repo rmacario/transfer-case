@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
 
 @FieldDefaults(level = PRIVATE)
 @ExtendWith(MockitoExtension.class)
@@ -31,6 +33,8 @@ class CustomerApplicationServiceTest {
     private static final Long ACCOUNT_NUMBER = 10l;
 
     private static final BigDecimal BALANCE = new BigDecimal(250l);
+
+    private static final Integer PAGINATION_PAGE_SIZE = 10;
 
     CustomerApplicationService customerApplicationService;
 
@@ -47,7 +51,8 @@ class CustomerApplicationServiceTest {
     @BeforeEach
     void setup() {
         this.customerApplicationService =
-                new CustomerApplicationService(customerRepository, accountRepository);
+                new CustomerApplicationService(
+                        customerRepository, accountRepository, PAGINATION_PAGE_SIZE);
     }
 
     @Test
@@ -85,5 +90,13 @@ class CustomerApplicationServiceTest {
         assertEquals(BALANCE, capturedCustomer.getAccount().getBalance());
         assertEquals(capturedCustomer, capturedCustomer.getAccount().getCustomer());
         assertEquals(persistedCustomer, persistedCustomer);
+    }
+
+    @Test
+    void findAllCustomersByPage_parameterOk_shouldFindCustomers() {
+        final var page = 1;
+        final var pageable = PageRequest.of(1, PAGINATION_PAGE_SIZE);
+        customerApplicationService.findAllCustomersByPage(page);
+        verify(customerRepository).findByOrderByIdAsc(eq(pageable));
     }
 }
