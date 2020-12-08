@@ -3,7 +3,7 @@ package br.com.rmacario.itau.interfaces.customer;
 import static lombok.AccessLevel.PRIVATE;
 
 import java.math.BigDecimal;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,7 +28,7 @@ import lombok.experimental.FieldDefaults;
 class CustomerCreateRequest {
 
     /** Nome do cliente. */
-    @NotEmpty String name;
+    @NotBlank String name;
 
     /** Número da conta. */
     @NotNull Long accountNumber;

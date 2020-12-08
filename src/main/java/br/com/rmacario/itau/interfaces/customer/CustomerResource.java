@@ -41,7 +41,7 @@ class CustomerResource {
     CustomerDataTranslator customerDataTranslator;
 
     @PostMapping
-    ResponseEntity<CustomerResponse> create(@RequestBody CustomerCreateRequest request) {
+    ResponseEntity<CustomerResponse> create(@Validated @RequestBody CustomerCreateRequest request) {
         final var customerCreateSolicitation =
                 customerDataTranslator.toCustomerCreateSolicitation(request);
         final var customer = customerApplicationService.create(customerCreateSolicitation);
