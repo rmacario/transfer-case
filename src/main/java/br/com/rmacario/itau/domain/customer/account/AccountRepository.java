@@ -14,7 +14,7 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     Optional<Account> findByNumber(@Param("number") Long accountNumber);
 
     @Lock(LockModeType.PESSIMISTIC_READ)
-    @Query("a FROM Accounta a WHERE a.id = :id")
+    @Query("FROM Account a WHERE a.id = :id")
     @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value = "500")})
     Account findByIdAndLockEntity(@Param("id") Long accountId);
 }

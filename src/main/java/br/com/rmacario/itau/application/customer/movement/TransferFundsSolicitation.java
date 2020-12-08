@@ -17,7 +17,7 @@ import lombok.experimental.FieldDefaults;
 @EqualsAndHashCode
 @FieldDefaults(level = PRIVATE)
 @AllArgsConstructor(access = PRIVATE)
-public class TransferSolicitation {
+public class TransferFundsSolicitation {
 
     @NonNull Long accountOrigin;
 

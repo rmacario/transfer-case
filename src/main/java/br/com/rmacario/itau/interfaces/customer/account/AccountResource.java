@@ -28,9 +28,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequestMapping(path = ACCOUNT_PATH, produces = APPLICATION_VND_V1, consumes = APPLICATION_VND_V1)
-class AccountResource {
+public class AccountResource {
 
-    static final String ACCOUNT_PATH = CUSTOMER_PATH + "/accounts";
+    public static final String ACCOUNT_PATH = CUSTOMER_PATH + "/accounts";
 
     CustomerApplicationService customerApplicationService;
 

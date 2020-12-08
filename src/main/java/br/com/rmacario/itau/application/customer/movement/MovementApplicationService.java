@@ -33,7 +33,7 @@ public class MovementApplicationService {
      *
      * @param solicitation Informações sobre a transferência que será realizada.
      */
-    public void requestTransfer(@NonNull final TransferSolicitation solicitation) {
+    public void requestTransferFunds(@NonNull final TransferFundsSolicitation solicitation) {
         final var customerOrigin =
                 customerRepository.findOneByAccountNumber(solicitation.getAccountOrigin());
         final var customerTarget =
