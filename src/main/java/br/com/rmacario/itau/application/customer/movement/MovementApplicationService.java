@@ -5,12 +5,15 @@ import static lombok.AccessLevel.PRIVATE;
 
 import br.com.rmacario.itau.domain.customer.CustomerRepository;
 import br.com.rmacario.itau.domain.customer.account.movement.AccountMovement;
+import br.com.rmacario.itau.domain.customer.account.movement.AccountMovementRepository;
 import br.com.rmacario.itau.domain.customer.account.movement.MovementDomainService;
 import br.com.rmacario.itau.domain.customer.account.movement.MovementType;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 /**
@@ -23,9 +26,13 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor(access = PACKAGE, onConstructor_ = @Autowired)
 public class MovementApplicationService {
 
+    private static final Integer PAGINATION_PAGE_SIZE = 10;
+
     MovementDomainService movementDomainService;
 
     CustomerRepository customerRepository;
+
+    AccountMovementRepository accountMovementRepository;
 
     /**
      * Orquestra chamadas de transferências de fundos de modo a obter os insumos necessários para
@@ -49,5 +56,19 @@ public class MovementApplicationService {
                         .build();
 
         movementDomainService.transferFunds(accountMovement);
+    }
+
+    /**
+     * Retorna uma {@link Page} com as movimentações financeiras relacionadas com o número da conta
+     * informado.
+     *
+     * @param accountNumber Número da conta.
+     * @param page Número da página que deve ser retornada.
+     * @return {@Page} encapsulando as {@link AccountMovement} encontradas.
+     */
+    public Page<AccountMovement> findByAccountNumber(
+            @NonNull final Long accountNumber, @NonNull final Integer page) {
+        return accountMovementRepository.findByAccountNumberOrderByIdDesc(
+                accountNumber, PageRequest.of(page, PAGINATION_PAGE_SIZE));
     }
 }

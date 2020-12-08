@@ -10,9 +10,11 @@ import br.com.rmacario.itau.domain.customer.Customer;
 import br.com.rmacario.itau.domain.customer.CustomerRepository;
 import br.com.rmacario.itau.domain.customer.account.Account;
 import br.com.rmacario.itau.domain.customer.account.movement.AccountMovement;
+import br.com.rmacario.itau.domain.customer.account.movement.AccountMovementRepository;
 import br.com.rmacario.itau.domain.customer.account.movement.MovementDomainService;
 import br.com.rmacario.itau.domain.customer.account.movement.MovementType;
 import java.math.BigDecimal;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +23,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 @ExtendWith(MockitoExtension.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -31,6 +35,12 @@ class MovementApplicationServiceTest {
     private static final Long ACCOUNT_TARGET = 10l;
 
     private static final BigDecimal AMOUNT = BigDecimal.TEN;
+
+    private static final Long ACCOUNT_NUMBER = 10l;
+
+    private static final Integer PAGE = 0;
+
+    private static final Integer PAGINATION_PAGE_SIZE = 10;
 
     MovementApplicationService movementApplicationService;
 
@@ -48,10 +58,15 @@ class MovementApplicationServiceTest {
 
     @Mock TransferFundsSolicitation transferFundsSolicitation;
 
+    @Mock AccountMovementRepository accountMovementRepository;
+
+    @Mock AccountMovement accountMovement;
+
     @BeforeEach
     void setup() {
         this.movementApplicationService =
-                new MovementApplicationService(movementDomainService, customerRepository);
+                new MovementApplicationService(
+                        movementDomainService, customerRepository, accountMovementRepository);
     }
 
     @Test
@@ -82,5 +97,30 @@ class MovementApplicationServiceTest {
         assertEquals(account, accountMovementCaptured.getValue().getAccountOrigin());
         assertEquals(accountTarget, accountMovementCaptured.getValue().getAccountTarget());
         assertEquals(MovementType.TRANSFER, accountMovementCaptured.getValue().getType());
+    }
+
+    @Test
+    void findByAccountNumber_accountNumberNull_shouldThrowIllegalArgumentException() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> movementApplicationService.findByAccountNumber(null, PAGE));
+    }
+
+    @Test
+    void findByAccountNumber_pageNull_shouldThrowIllegalArgumentException() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> movementApplicationService.findByAccountNumber(ACCOUNT_NUMBER, null));
+    }
+
+    @Test
+    void findByAccountNumber_parametersOk_shouldFindAccountMovements() {
+        final var accountMovementsFound = new PageImpl<>(List.of(accountMovement, accountMovement));
+        when(accountMovementRepository.findByAccountNumberOrderByIdDesc(
+                        ACCOUNT_NUMBER, PageRequest.of(PAGE, PAGINATION_PAGE_SIZE)))
+                .thenReturn(accountMovementsFound);
+
+        final var result = movementApplicationService.findByAccountNumber(ACCOUNT_NUMBER, PAGE);
+        assertEquals(accountMovementsFound, result);
     }
 }
