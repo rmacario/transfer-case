@@ -30,11 +30,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequestMapping(path = CUSTOMER_PATH, produces = APPLICATION_VND_V1, consumes = APPLICATION_VND_V1)
-class CustomerResource {
+public class CustomerResource {
 
     private static final String DEFAULT_PAGE = "0";
 
-    static final String CUSTOMER_PATH = "/customers";
+    public static final String CUSTOMER_PATH = "/customers";
 
     CustomerApplicationService customerApplicationService;
 

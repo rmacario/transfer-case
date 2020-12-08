@@ -99,4 +99,14 @@ class CustomerApplicationServiceTest {
         customerApplicationService.findAllCustomersByPage(page);
         verify(customerRepository).findByOrderByIdAsc(eq(pageable));
     }
+
+    @Test
+    void findByAccountNumber_customerFound_shouldReturnCustomer() {
+        final var accountNumber = 10l;
+        when(customerRepository.findOneByAccountNumber(accountNumber)).thenReturn(customer);
+        final var customerFound = customerApplicationService.findByAccountNumber(accountNumber);
+
+        assertNotNull(customerFound);
+        assertEquals(customer, customerFound);
+    }
 }

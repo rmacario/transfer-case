@@ -12,10 +12,10 @@ import org.springframework.stereotype.Component;
  * @author rmacario
  */
 @Component
-class CustomerDataTranslator {
+public class CustomerDataTranslator {
 
     /** Converte um {@link CustomerCreateRequest} em {@link CustomerCreateSolicitation}. */
-    CustomerCreateSolicitation toCustomerCreateSolicitation(
+    public CustomerCreateSolicitation toCustomerCreateSolicitation(
             @NonNull final CustomerCreateRequest customerCreateRequest) {
         return CustomerCreateSolicitation.builder()
                 .name(customerCreateRequest.getName())
@@ -25,7 +25,7 @@ class CustomerDataTranslator {
     }
 
     /** Converte um {@link Customer} em {@link CustomerResponse}. */
-    CustomerResponse toCustomerResponse(@NonNull final Customer customer) {
+    public CustomerResponse toCustomerResponse(@NonNull final Customer customer) {
         return CustomerResponse.builder()
                 .name(customer.getName())
                 .createdAt(customer.getCreatedAt())

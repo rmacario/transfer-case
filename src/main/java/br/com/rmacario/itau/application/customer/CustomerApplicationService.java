@@ -80,4 +80,14 @@ public class CustomerApplicationService {
     public Page<Customer> findAllCustomersByPage(final int page) {
         return customerRepository.findByOrderByIdAsc(PageRequest.of(page, defaultPageSize));
     }
+
+    /**
+     * Realiza a busca de um {@link Customer} pelo número de sua conta.
+     *
+     * @param accountNumber Número da conta utilizado na pesquisa.
+     * @return {@link Customer} encontrado.
+     */
+    public Customer findByAccountNumber(final long accountNumber) {
+        return customerRepository.findOneByAccountNumber(accountNumber);
+    }
 }

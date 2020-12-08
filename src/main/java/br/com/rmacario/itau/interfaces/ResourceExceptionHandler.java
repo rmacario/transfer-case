@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import javax.persistence.EntityNotFoundException;
 import javax.validation.ConstraintViolationException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -60,6 +61,12 @@ class ResourceExceptionHandler extends ResponseEntityExceptionHandler {
             final AccountNumberAlreadyExistsException ex) {
         final var response = CustomErrorResponse.builder().genericMessage(ex.getMessage()).build();
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    ResponseEntity<Object> handleEntityNotFoundException(final EntityNotFoundException ex) {
+        final var response = CustomErrorResponse.builder().genericMessage(ex.getMessage()).build();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     // ------------------------------

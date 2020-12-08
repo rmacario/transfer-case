@@ -21,7 +21,7 @@ import lombok.experimental.FieldDefaults;
 @EqualsAndHashCode
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-class CustomerResponse {
+public class CustomerResponse {
 
     /** Nome do cliente. */
     String name;
@@ -39,7 +39,7 @@ class CustomerResponse {
     @EqualsAndHashCode
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-    static class AccountResponse {
+    public static class AccountResponse {
 
         /** Número da conta do cliente. */
         Long number;
