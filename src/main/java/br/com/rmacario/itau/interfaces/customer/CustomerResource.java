@@ -4,7 +4,7 @@ import static br.com.rmacario.itau.infrastructure.http.ResourceMediaType.APPLICA
 import static br.com.rmacario.itau.interfaces.customer.CustomerResource.CUSTOMER_PATH;
 import static org.springframework.http.HttpStatus.CREATED;
 
-import br.com.rmacario.itau.application.customer.CustomerRegisterApplicationService;
+import br.com.rmacario.itau.application.customer.CustomerApplicationService;
 import br.com.rmacario.itau.domain.customer.Customer;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ class CustomerResource {
 
     static final String CUSTOMER_PATH = "/customers";
 
-    CustomerRegisterApplicationService customerRegisterApplicationService;
+    CustomerApplicationService customerApplicationService;
 
     CustomerDataTranslator customerDataTranslator;
 
@@ -36,9 +36,8 @@ class CustomerResource {
     ResponseEntity<CustomerCreateResponse> create(@Validated CustomerCreateRequest request) {
         final var customerCreateSolicitation =
                 customerDataTranslator.toCustomerCreateSolicitation(request);
-        final var customerCreateData =
-                customerRegisterApplicationService.create(customerCreateSolicitation);
-        final var response = customerDataTranslator.toCustomerResponse(customerCreateData);
+        final var customer = customerApplicationService.create(customerCreateSolicitation);
+        final var response = customerDataTranslator.toCustomerResponse(customer);
 
         return ResponseEntity.status(CREATED).body(response);
     }

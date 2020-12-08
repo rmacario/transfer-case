@@ -1,7 +1,7 @@
 package br.com.rmacario.itau.interfaces.customer;
 
 import br.com.rmacario.itau.application.customer.CustomerCreateSolicitation;
-import br.com.rmacario.itau.application.customer.CustomerCreationData;
+import br.com.rmacario.itau.domain.customer.Customer;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -24,16 +24,15 @@ class CustomerDataTranslator {
                 .build();
     }
 
-    /** Converte um {@link CustomerCreationData} em {@link CustomerCreateResponse}. */
-    CustomerCreateResponse toCustomerResponse(
-            @NonNull final CustomerCreationData customerCreationData) {
+    /** Converte um {@link Customer} em {@link CustomerCreateResponse}. */
+    CustomerCreateResponse toCustomerResponse(@NonNull final Customer customer) {
         return CustomerCreateResponse.builder()
-                .name(customerCreationData.getName())
-                .createdAt(customerCreationData.getCreatedAt())
+                .name(customer.getName())
+                .createdAt(customer.getCreatedAt())
                 .account(
                         CustomerCreateResponse.AccountResponse.builder()
-                                .number(customerCreationData.getAccountNumber())
-                                .balance(customerCreationData.getAccountBalance())
+                                .number(customer.getAccount().getNumber())
+                                .balance(customer.getAccount().getBalance())
                                 .build())
                 .build();
     }

@@ -1,5 +1,7 @@
 package br.com.rmacario.itau.domain.customer;
 
+import static javax.persistence.CascadeType.ALL;
+
 import br.com.rmacario.itau.domain.customer.account.Account;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
@@ -46,6 +48,15 @@ public class Customer implements Serializable {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToOne(mappedBy = "customer")
+    @OneToOne(mappedBy = "customer", cascade = ALL)
     Account account;
+
+    /** Preenche o relacionamento da {@link Account} com o {@link Customer}. */
+    public Customer bindAccount() {
+        if (account != null) {
+            account.setCustomer(this);
+        }
+
+        return this;
+    }
 }

@@ -3,9 +3,9 @@ package br.com.rmacario.itau.interfaces.customer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
+import br.com.rmacario.itau.application.customer.CustomerApplicationService;
 import br.com.rmacario.itau.application.customer.CustomerCreateSolicitation;
-import br.com.rmacario.itau.application.customer.CustomerCreationData;
-import br.com.rmacario.itau.application.customer.CustomerRegisterApplicationService;
+import br.com.rmacario.itau.domain.customer.Customer;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +21,7 @@ class CustomerResourceTest {
 
     CustomerResource customerResource;
 
-    @Mock CustomerRegisterApplicationService customerRegisterApplicationService;
+    @Mock CustomerApplicationService customerApplicationService;
 
     @Mock CustomerDataTranslator customerDataTranslator;
 
@@ -29,23 +29,22 @@ class CustomerResourceTest {
 
     @Mock CustomerCreateSolicitation customerCreateSolicitation;
 
-    @Mock CustomerCreationData customerCreationData;
-
     @Mock CustomerCreateResponse response;
+
+    @Mock Customer customer;
 
     @BeforeEach
     void setup() {
         this.customerResource =
-                new CustomerResource(customerRegisterApplicationService, customerDataTranslator);
+                new CustomerResource(customerApplicationService, customerDataTranslator);
     }
 
     @Test
     void create_customerCreatedSuccessfully_shouldReturnHttpStatusCreatedWithBody() {
         when(customerDataTranslator.toCustomerCreateSolicitation(request))
                 .thenReturn(customerCreateSolicitation);
-        when(customerRegisterApplicationService.create(customerCreateSolicitation))
-                .thenReturn(customerCreationData);
-        when(customerDataTranslator.toCustomerResponse(customerCreationData)).thenReturn(response);
+        when(customerApplicationService.create(customerCreateSolicitation)).thenReturn(customer);
+        when(customerDataTranslator.toCustomerResponse(customer)).thenReturn(response);
 
         final var creationResponse = customerResource.create(request);
 

@@ -5,7 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-import br.com.rmacario.itau.application.customer.CustomerCreationData;
+import br.com.rmacario.itau.domain.customer.Customer;
+import br.com.rmacario.itau.domain.customer.account.Account;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import lombok.AccessLevel;
@@ -32,7 +33,9 @@ class CustomerDataTranslatorTest {
 
     @Mock CustomerCreateRequest request;
 
-    @Mock CustomerCreationData customerCreationData;
+    @Mock Customer customer;
+
+    @Mock Account account;
 
     @BeforeEach
     void setup() {
@@ -70,13 +73,13 @@ class CustomerDataTranslatorTest {
 
     @Test
     void toCustomerResponse_parameterOk_shouldReturnCustomerResponse() {
-        when(customerCreationData.getName()).thenReturn(NAME);
-        when(customerCreationData.getCreatedAt()).thenReturn(CREATED_AT);
-        when(customerCreationData.getAccountNumber()).thenReturn(ACCOUNT_NUMBER);
-        when(customerCreationData.getAccountBalance()).thenReturn(ACCOUNT_BALANCE);
+        when(customer.getName()).thenReturn(NAME);
+        when(customer.getCreatedAt()).thenReturn(CREATED_AT);
+        when(customer.getAccount()).thenReturn(account);
+        when(account.getNumber()).thenReturn(ACCOUNT_NUMBER);
+        when(account.getBalance()).thenReturn(ACCOUNT_BALANCE);
 
-        final var customerCreateResponse =
-                customerDataTranslator.toCustomerResponse(customerCreationData);
+        final var customerCreateResponse = customerDataTranslator.toCustomerResponse(customer);
 
         assertNotNull(customerCreateResponse);
         assertEquals(NAME, customerCreateResponse.getName());

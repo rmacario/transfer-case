@@ -20,6 +20,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
@@ -47,6 +48,7 @@ public class Account implements Serializable {
     @Column(name = "NUM_BALANCE", precision = 10, scale = 6, nullable = false)
     BigDecimal balance;
 
+    @Setter
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @OneToOne(optional = false)
