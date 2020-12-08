@@ -6,11 +6,11 @@ package br.com.rmacario.itau.domain.customer.account.movement;
  *
  * @author rmacario
  */
-public class InsufficientBalanceException extends RuntimeException {
+public class InsufficientBalanceException extends MovementBusinessException {
 
     private static final long serialVersionUID = -5671305696516082599L;
 
     InsufficientBalanceException() {
-        super("Saldo insuficiente.");
+        super(MovementErrorType.INSUFFICIENT_FUNDS, "Saldo insuficiente.");
     }
 }

@@ -1,0 +1,12 @@
+package br.com.rmacario.itau.domain.customer.account.movement;
+
+/**
+ * Descreve os erros mapeados que podem ocorrer durante uma solicitação de transferência de fundos.
+ *
+ * @author rmacario
+ */
+public enum MovementErrorType {
+    INSUFFICIENT_FUNDS,
+
+    SAME_ORIGIN;
+}

@@ -33,7 +33,12 @@ public class MovementDomainService {
         final var accountTarget =
                 accountRepository.findByIdAndLockEntity(accountMovement.getAccountTarget().getId());
 
-        if (hasSufficientFunds(accountMovement, accountOrigin)) {
+        if (accountOrigin.getId().equals(accountTarget.getId())) {
+            accountMovement.setSuccess(false);
+            accountMovementRepository.saveAndFlush(accountMovement);
+            throw new TransferFundsToSameOriginException();
+
+        } else if (hasSufficientFunds(accountMovement, accountOrigin)) {
             sendFunds(accountMovement, accountOrigin);
             receiveFunds(accountMovement, accountTarget);
 

@@ -35,7 +35,8 @@ class MovementResource {
     MovementApplicationService movementApplicationService;
 
     @PostMapping
-    ResponseEntity<Void> transferFunds(@Validated @RequestBody TransferFundsRequest request) {
+    ResponseEntity<TransferFundsResponse> transferFunds(
+            @Validated @RequestBody TransferFundsRequest request) {
         final var solicitation =
                 TransferFundsSolicitation.builder()
                         .accountOrigin(request.getAccountOrigin())
@@ -43,6 +44,9 @@ class MovementResource {
                         .amount(request.getAmount())
                         .build();
         movementApplicationService.requestTransferFunds(solicitation);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+
+        // Por questões de simplicidade o header location não será incluído.
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(TransferFundsResponse.builder().success(Boolean.TRUE).build());
     }
 }

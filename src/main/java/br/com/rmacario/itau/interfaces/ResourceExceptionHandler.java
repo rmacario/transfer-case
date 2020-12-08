@@ -4,6 +4,8 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
 import static lombok.AccessLevel.PRIVATE;
 
 import br.com.rmacario.itau.application.customer.AccountNumberAlreadyExistsException;
+import br.com.rmacario.itau.domain.customer.account.movement.MovementBusinessException;
+import br.com.rmacario.itau.interfaces.customer.account.movement.TransferFundsResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -67,6 +69,21 @@ class ResourceExceptionHandler extends ResponseEntityExceptionHandler {
     ResponseEntity<Object> handleEntityNotFoundException(final EntityNotFoundException ex) {
         final var response = CustomErrorResponse.builder().genericMessage(ex.getMessage()).build();
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(MovementBusinessException.class)
+    ResponseEntity<TransferFundsResponse> handleInsufficientBalanceException(
+            final MovementBusinessException ex) {
+        final var response =
+                TransferFundsResponse.builder()
+                        .success(Boolean.FALSE)
+                        .error(
+                                TransferFundsResponse.Error.builder()
+                                        .message(ex.getMessage())
+                                        .type(ex.getErrorType())
+                                        .build())
+                        .build();
+        return ResponseEntity.badRequest().body(response);
     }
 
     // ------------------------------
