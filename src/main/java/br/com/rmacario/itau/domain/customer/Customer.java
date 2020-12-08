@@ -18,6 +18,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
@@ -39,6 +40,7 @@ public class Customer implements Serializable {
     @Column(name = "ID_CUSTOMER")
     Long id;
 
+    @NonNull
     @Column(name = "NAM_CUSTOMER", nullable = false, length = 250)
     String name;
 
@@ -46,6 +48,7 @@ public class Customer implements Serializable {
     @Column(name = "DAT_CREATION", nullable = false)
     ZonedDateTime createdAt = ZonedDateTime.now();
 
+    @NonNull
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @OneToOne(mappedBy = "customer", cascade = ALL)

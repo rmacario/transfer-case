@@ -20,6 +20,8 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
@@ -41,6 +43,7 @@ public class AccountMovement implements Serializable {
     @Column(name = "ID_MOVEMENT")
     Long id;
 
+    @NonNull
     @Column(name = "NUM_VALUE", precision = 10, scale = 6, nullable = false)
     BigDecimal value;
 
@@ -48,28 +51,34 @@ public class AccountMovement implements Serializable {
     @Column(name = "DAT_CREATION", nullable = false)
     ZonedDateTime createdAt = ZonedDateTime.now();
 
+    @NonNull
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @ManyToOne(optional = false)
     @JoinColumn(name = "ID_ACCOUNT_OWNER", nullable = false, updatable = false)
     Account account;
 
+    @NonNull
     @Enumerated(EnumType.STRING)
     @Column(name = "IND_MOVEMENT_TYPE", updatable = false, length = 50)
     MovementType type;
 
+    @NonNull
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @ManyToOne(optional = false)
     @JoinColumn(name = "ID_ACCOUNT_ORIGIN", nullable = false, updatable = false)
     Account accountOrigin;
 
+    @NonNull
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @ManyToOne(optional = false)
     @JoinColumn(name = "ID_ACCOUNT_TARGET", nullable = false, updatable = false)
     Account accountTarget;
 
+    @Setter
+    @Builder.Default
     @Column(name = "FLG_SUCCESS", nullable = false)
-    Boolean success;
+    Boolean success = Boolean.TRUE;
 }

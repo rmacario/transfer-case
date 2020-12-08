@@ -20,6 +20,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
@@ -42,9 +43,11 @@ public class Account implements Serializable {
     @Column(name = "ID_ACCOUNT")
     Long id;
 
+    @NonNull
     @Column(name = "NUM_ACCOUNT", unique = true, updatable = false, nullable = false)
     Long number;
 
+    @NonNull
     @Column(name = "NUM_BALANCE", precision = 10, scale = 6, nullable = false)
     BigDecimal balance;
 
