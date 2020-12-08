@@ -5,6 +5,7 @@ import br.com.rmacario.itau.domain.customer.account.movement.AccountMovement;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -60,6 +61,14 @@ public class Account implements Serializable {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "account")
+    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
     List<AccountMovement> accountMovements;
+
+    public void subtractBalance(@NonNull final BigDecimal amount) {
+        this.balance = this.balance.subtract(amount);
+    }
+
+    public void addBalance(@NonNull final BigDecimal amount) {
+        this.balance = this.balance.add(amount);
+    }
 }
