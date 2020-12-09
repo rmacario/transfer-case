@@ -47,6 +47,8 @@ class ResourceExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final String BEAN_VALIDATIONS_MSG = "Campo(s) não preenchido(s) corretamente.";
 
+    /** Logs foram adicionados diretamente nos tratamentos por questões de simplicidade. */
+
     /** Trata exceções lançadas por erros de Beans Validations no body de requisições.. */
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
