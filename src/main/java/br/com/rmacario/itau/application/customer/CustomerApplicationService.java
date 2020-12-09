@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -78,7 +79,7 @@ public class CustomerApplicationService {
      * @return {@link Page} de customers.
      */
     public Page<Customer> findAllCustomersByPage(final int page) {
-        return customerRepository.findByOrderByIdAsc(PageRequest.of(page, defaultPageSize));
+        return customerRepository.findAll(PageRequest.of(page, defaultPageSize, Sort.by("id")));
     }
 
     /**

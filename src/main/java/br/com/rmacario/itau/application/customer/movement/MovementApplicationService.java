@@ -1,7 +1,7 @@
 package br.com.rmacario.itau.application.customer.movement;
 
-import static lombok.AccessLevel.PACKAGE;
 import static lombok.AccessLevel.PRIVATE;
+import static org.springframework.data.domain.Sort.Direction.DESC;
 
 import br.com.rmacario.itau.domain.customer.CustomerRepository;
 import br.com.rmacario.itau.domain.customer.account.movement.AccountMovement;
@@ -9,11 +9,12 @@ import br.com.rmacario.itau.domain.customer.account.movement.AccountMovementRepo
 import br.com.rmacario.itau.domain.customer.account.movement.MovementDomainService;
 import br.com.rmacario.itau.domain.customer.account.movement.MovementType;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 /**
@@ -23,16 +24,27 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @FieldDefaults(level = PRIVATE, makeFinal = true)
-@RequiredArgsConstructor(access = PACKAGE, onConstructor_ = @Autowired)
 public class MovementApplicationService {
-
-    private static final Integer PAGINATION_PAGE_SIZE = 10;
 
     MovementDomainService movementDomainService;
 
     CustomerRepository customerRepository;
 
     AccountMovementRepository accountMovementRepository;
+
+    Integer defaultPageSize;
+
+    @Autowired
+    MovementApplicationService(
+            final MovementDomainService movementDomainService,
+            final CustomerRepository customerRepository,
+            final AccountMovementRepository accountMovementRepository,
+            @Value("${app.repository.pagination.default-size}") final Integer defaultPageSize) {
+        this.movementDomainService = movementDomainService;
+        this.customerRepository = customerRepository;
+        this.accountMovementRepository = accountMovementRepository;
+        this.defaultPageSize = defaultPageSize;
+    }
 
     /**
      * Orquestra chamadas de transferências de fundos de modo a obter os insumos necessários para
@@ -69,6 +81,6 @@ public class MovementApplicationService {
     public Page<AccountMovement> findByAccountNumber(
             @NonNull final Long accountNumber, @NonNull final Integer page) {
         return accountMovementRepository.findByAccountNumberOrderByIdDesc(
-                accountNumber, PageRequest.of(page, PAGINATION_PAGE_SIZE));
+                accountNumber, PageRequest.of(page, defaultPageSize, Sort.by(DESC, "id")));
     }
 }

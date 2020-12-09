@@ -6,6 +6,7 @@ import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
@@ -17,7 +18,10 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
      * @param pageable Informações da paginação que deverá ser realizada.
      * @return {@link Page} com os customers encontrados.
      */
-    Page<Customer> findByOrderByIdAsc(Pageable pageable);
+    @Query(
+            value = "FROM Customer c JOIN FETCH c.account a",
+            countQuery = "SELECT count(c) FROM Customer c")
+    Page<Customer> findAll(Pageable pageable);
 
     /**
      * Busca um {@link Customer} pelo número de sua conta.
@@ -26,6 +30,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
      * @return {@link Optional} encapsulando o registro encontrado, ou vazio, caso a consulta não
      *     encontre registros.
      */
+    @Query("FROM Customer c JOIN FETCH c.account a WHERE a.number = :number")
     Optional<Customer> findByAccountNumber(@Param("number") Long accountNumber);
 
     /**

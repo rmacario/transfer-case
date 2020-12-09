@@ -5,7 +5,7 @@ import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 /**
- * Classe que cont�m a l�gica de convers�o de objetos de resposta da API em {@link AccountMovement}.
+ * Classe que contém a lógica de conversão de objetos de resposta da API em {@link AccountMovement}.
  *
  * @author rmacario
  */

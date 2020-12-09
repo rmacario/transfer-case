@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.data.domain.Sort.Direction.DESC;
 
 import br.com.rmacario.itau.domain.customer.Customer;
 import br.com.rmacario.itau.domain.customer.CustomerRepository;
@@ -25,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 @ExtendWith(MockitoExtension.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -66,7 +68,10 @@ class MovementApplicationServiceTest {
     void setup() {
         this.movementApplicationService =
                 new MovementApplicationService(
-                        movementDomainService, customerRepository, accountMovementRepository);
+                        movementDomainService,
+                        customerRepository,
+                        accountMovementRepository,
+                        PAGINATION_PAGE_SIZE);
     }
 
     @Test
@@ -117,7 +122,8 @@ class MovementApplicationServiceTest {
     void findByAccountNumber_parametersOk_shouldFindAccountMovements() {
         final var accountMovementsFound = new PageImpl<>(List.of(accountMovement, accountMovement));
         when(accountMovementRepository.findByAccountNumberOrderByIdDesc(
-                        ACCOUNT_NUMBER, PageRequest.of(PAGE, PAGINATION_PAGE_SIZE)))
+                        ACCOUNT_NUMBER,
+                        PageRequest.of(PAGE, PAGINATION_PAGE_SIZE, Sort.by(DESC, "id"))))
                 .thenReturn(accountMovementsFound);
 
         final var result = movementApplicationService.findByAccountNumber(ACCOUNT_NUMBER, PAGE);

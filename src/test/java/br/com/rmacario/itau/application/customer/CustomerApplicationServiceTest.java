@@ -23,6 +23,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 @FieldDefaults(level = PRIVATE)
 @ExtendWith(MockitoExtension.class)
@@ -95,9 +96,9 @@ class CustomerApplicationServiceTest {
     @Test
     void findAllCustomersByPage_parameterOk_shouldFindCustomers() {
         final var page = 1;
-        final var pageable = PageRequest.of(1, PAGINATION_PAGE_SIZE);
+        final var pageable = PageRequest.of(1, PAGINATION_PAGE_SIZE, Sort.by("id"));
         customerApplicationService.findAllCustomersByPage(page);
-        verify(customerRepository).findByOrderByIdAsc(eq(pageable));
+        verify(customerRepository).findAll(eq(pageable));
     }
 
     @Test
