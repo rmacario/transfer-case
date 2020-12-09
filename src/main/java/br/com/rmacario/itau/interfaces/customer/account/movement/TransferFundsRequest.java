@@ -31,7 +31,5 @@ class TransferFundsRequest {
 
     @NotNull Long accountTarget;
 
-    @PositiveOrZero
-    @LimitAmount("1000.00")
-    BigDecimal amount;
+    @PositiveOrZero BigDecimal amount;
 }

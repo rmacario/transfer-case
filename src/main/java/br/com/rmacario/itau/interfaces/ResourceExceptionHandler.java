@@ -2,6 +2,9 @@ package br.com.rmacario.itau.interfaces;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
 import static lombok.AccessLevel.PRIVATE;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import br.com.rmacario.itau.application.customer.AccountNumberAlreadyExistsException;
 import br.com.rmacario.itau.domain.customer.account.movement.MovementBusinessException;
@@ -19,6 +22,8 @@ import lombok.Singular;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.validator.internal.engine.path.PathImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +43,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 class ResourceExceptionHandler extends ResponseEntityExceptionHandler {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ResourceExceptionHandler.class);
+
     private static final String BEAN_VALIDATIONS_MSG = "Campo(s) não preenchido(s) corretamente.";
 
     /** Trata exceções lançadas por erros de Beans Validations no body de requisições.. */
@@ -48,27 +55,33 @@ class ResourceExceptionHandler extends ResponseEntityExceptionHandler {
             final HttpStatus status,
             final WebRequest request) {
         final BindingResult result = ex.getBindingResult();
-        return ResponseEntity.badRequest().body(processErrors(result, BEAN_VALIDATIONS_MSG));
+        final var responseBody = processErrors(result, BEAN_VALIDATIONS_MSG);
+        LOGGER.error("httpStatus={}, responseBody={}", BAD_REQUEST, responseBody);
+        return ResponseEntity.badRequest().body(responseBody);
     }
 
     /** Trata exceções lançadas por erros de Beans Validations nos parâmetros do endpoint. */
     @ExceptionHandler(ConstraintViolationException.class)
     ResponseEntity<Object> handleConstraintViolationException(
             final ConstraintViolationException ex) {
-        return ResponseEntity.badRequest().body(processErrors(ex, BEAN_VALIDATIONS_MSG));
+        final var responseBody = processErrors(ex, BEAN_VALIDATIONS_MSG);
+        LOGGER.error("httpStatus={}, responseBody={}", BAD_REQUEST, responseBody);
+        return ResponseEntity.badRequest().body(responseBody);
     }
 
     @ExceptionHandler(AccountNumberAlreadyExistsException.class)
     ResponseEntity<Object> handleAccountNumberAlreadyExistsException(
             final AccountNumberAlreadyExistsException ex) {
         final var response = CustomErrorResponse.builder().genericMessage(ex.getMessage()).build();
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        LOGGER.error("httpStatus={}, responseBody={}", CONFLICT, response);
+        return ResponseEntity.status(CONFLICT).body(response);
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
     ResponseEntity<Object> handleEntityNotFoundException(final EntityNotFoundException ex) {
         final var response = CustomErrorResponse.builder().genericMessage(ex.getMessage()).build();
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        LOGGER.error("httpStatus={}, responseBody={}", NOT_FOUND, response);
+        return ResponseEntity.status(NOT_FOUND).body(response);
     }
 
     @ExceptionHandler(MovementBusinessException.class)
@@ -83,6 +96,7 @@ class ResourceExceptionHandler extends ResponseEntityExceptionHandler {
                                         .type(ex.getErrorType())
                                         .build())
                         .build();
+        LOGGER.error("httpStatus={}, responseBody={}", BAD_REQUEST, response);
         return ResponseEntity.badRequest().body(response);
     }
 
@@ -104,7 +118,7 @@ class ResourceExceptionHandler extends ResponseEntityExceptionHandler {
                             } else {
                                 field = e.getObjectName();
                             }
-                            errorResponseBuilder.error(field, e.getDefaultMessage());
+                            errorResponseBuilder.errorDetail(field, e.getDefaultMessage());
                         });
 
         return errorResponseBuilder.build();
@@ -122,7 +136,7 @@ class ResourceExceptionHandler extends ResponseEntityExceptionHandler {
 
         return CustomErrorResponse.builder()
                 .genericMessage(genericMessage)
-                .errors(errorsMap)
+                .errorDetails(errorsMap)
                 .build();
     }
 
@@ -139,6 +153,6 @@ class ResourceExceptionHandler extends ResponseEntityExceptionHandler {
 
         @Singular
         @JsonInclude(NON_EMPTY)
-        Map<String, String> errors;
+        Map<String, String> errorDetails;
     }
 }

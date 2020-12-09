@@ -3,11 +3,15 @@ package br.com.rmacario.itau.domain.customer.account.movement;
 import br.com.rmacario.itau.domain.customer.Customer;
 import br.com.rmacario.itau.domain.customer.account.Account;
 import br.com.rmacario.itau.domain.customer.account.AccountRepository;
+import java.math.BigDecimal;
+import java.util.function.Function;
 import lombok.AccessLevel;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -20,12 +24,26 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED, onConstructor_ = @Autowired)
 public class MovementDomainService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MovementDomainService.class);
 
     AccountRepository accountRepository;
 
     AccountMovementRepository accountMovementRepository;
+
+    BigDecimal transferLimitAmount;
+
+    @Autowired
+    MovementDomainService(
+            final AccountRepository accountRepository,
+            final AccountMovementRepository accountMovementRepository,
+            @Value("${app.domain.movements.transfer-limit-amount}")
+                    final BigDecimal transferLimitAmount) {
+        this.accountRepository = accountRepository;
+        this.accountMovementRepository = accountMovementRepository;
+        this.transferLimitAmount = transferLimitAmount;
+    }
 
     /**
      * Realiza a transferência de fundos entre as contas informadas.
@@ -45,44 +63,93 @@ public class MovementDomainService {
      * @throws ConcurrentTransferFundsException se houver outra movimentação em andamento para as
      *     contas envolvidas.
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(
+            propagation = Propagation.REQUIRES_NEW,
+            noRollbackFor = {
+                ConcurrentTransferFundsException.class,
+                TransferFundsToSameOriginException.class,
+                InsufficientBalanceException.class,
+                TransferLimitExceededException.class
+            })
     public void transferFunds(@NonNull final AccountMovement accountMovement) {
-        final Account accountOrigin;
-        final Account accountTarget;
-        try {
-            accountOrigin =
-                    accountRepository.findByIdAndLockEntity(accountMovement.getAccount().getId());
-            accountTarget =
-                    accountRepository.findByIdAndLockEntity(
-                            accountMovement.getAccountTarget().getId());
-
-        } catch (final PessimisticLockingFailureException e) {
-            throw new ConcurrentTransferFundsException();
-        }
+        final var accountOriginId = accountMovement.getAccount().getId();
+        final var accountTargetId = accountMovement.getAccountTarget().getId();
+        final var accountOrigin = getLockedAccountHandlingError(accountOriginId, accountMovement);
+        final var accountTarget = getLockedAccountHandlingError(accountTargetId, accountMovement);
 
         if (accountOrigin.getId().equals(accountTarget.getId())) {
-            accountMovement.setSuccess(false);
-            accountMovementRepository.saveAndFlush(accountMovement);
-            throw new TransferFundsToSameOriginException();
+            saveAsUnsuccessAndThrowError(
+                    accountMovement,
+                    (am) -> {
+                        LOGGER.error(
+                                "msg=Trying to transfer funds to same orgin, accountId={}.",
+                                accountOriginId);
+                        throw new TransferFundsToSameOriginException();
+                    });
 
-        } else if (hasSufficientFunds(accountMovement, accountOrigin)) {
-            sendFunds(accountMovement, accountOrigin);
-            receiveFunds(accountMovement, accountTarget);
-
-        } else {
-            accountMovement.setSuccess(false);
-            accountMovementRepository.saveAndFlush(accountMovement);
-            throw new InsufficientBalanceException();
+        } else if (transferAmountExceedLimit(accountMovement.getValue())) {
+            saveAsUnsuccessAndThrowError(
+                    accountMovement,
+                    (am) -> {
+                        LOGGER.error(
+                                "msg=Trying to transfer amount greather than allowed, transferValue={}.",
+                                accountMovement.getValue());
+                        throw new TransferLimitExceededException(transferLimitAmount);
+                    });
+        } else if (accountHasNotSufficientFunds(accountMovement, accountOrigin)) {
+            saveAsUnsuccessAndThrowError(
+                    accountMovement,
+                    (am) -> {
+                        LOGGER.error("msg=Customer has not balance enough.");
+                        throw new InsufficientBalanceException();
+                    });
         }
+
+        sendFunds(accountMovement, accountOrigin);
+        receiveFunds(accountMovement, accountTarget);
     }
 
     // --------------------------------
     // Privates
 
+    private void saveAsUnsuccessAndThrowError(
+            final AccountMovement accountMovement, final Function<AccountMovement, Void> ex) {
+        accountMovement.setSuccess(false);
+        accountMovementRepository.save(accountMovement);
+        ex.apply(accountMovement);
+    }
+
+    /**
+     * Obtém um registro de {@link Account} buscando pelo id informado e realizando um lock no
+     * mesmo.
+     *
+     * <p<Caso o lock não seja feito com sucesso, será lançado uma exceção do tipo {@link ConcurrentTransferFundsException}.</p>
+     */
+    private Account getLockedAccountHandlingError(
+            final Long accountId, final AccountMovement accountMovement) {
+        try {
+            return accountRepository.findByIdAndLockEntity(accountId);
+
+        } catch (final PessimisticLockingFailureException e) {
+            saveAsUnsuccessAndThrowError(
+                    accountMovement,
+                    (am) -> {
+                        LOGGER.error("msg=Fail to lock account, accountId=[].", accountId);
+                        throw new ConcurrentTransferFundsException();
+                    });
+            return null;
+        }
+    }
+
+    /** Indica se o valor que está sendo transferido ultrapassa o limite permitido. */
+    private boolean transferAmountExceedLimit(final BigDecimal transferAmount) {
+        return transferAmount.compareTo(transferLimitAmount) > 0;
+    }
+
     /** Indica se existe saldo suficiente em conta para realizar a movimentação. */
-    private boolean hasSufficientFunds(
+    private boolean accountHasNotSufficientFunds(
             final AccountMovement accountMovement, final Account account) {
-        return account.getBalance().compareTo(accountMovement.getValue()) >= 0;
+        return account.getBalance().compareTo(accountMovement.getValue()) < 0;
     }
 
     /**

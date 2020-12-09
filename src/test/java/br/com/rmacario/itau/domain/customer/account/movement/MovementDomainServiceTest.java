@@ -1,5 +1,6 @@
 package br.com.rmacario.itau.domain.customer.account.movement;
 
+import static java.math.BigDecimal.ONE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -30,6 +31,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 class MovementDomainServiceTest {
 
+    private static final BigDecimal TRANSFER_LIMIT = BigDecimal.valueOf(100l);
+
     private static final Long ACCOUNT_ORIGIN_ID = 10l;
 
     private static final Long ACCOUNT_TARGET_ID = 20l;
@@ -50,8 +53,6 @@ class MovementDomainServiceTest {
 
     @BeforeEach
     void setup() {
-        this.movementDomainService =
-                new MovementDomainService(accountRepository, accountMovementRepository);
         this.accountMovement =
                 AccountMovement.builder()
                         .type(MovementType.TRANSFER)
@@ -67,7 +68,12 @@ class MovementDomainServiceTest {
     void transferFunds_parametrized(
             final boolean areAccountsOriginAndTargetEquals,
             final boolean hasSufficientFunds,
+            final BigDecimal transferLimit,
             final Class<?> expectedExceptionClass) {
+        this.movementDomainService =
+                new MovementDomainService(
+                        accountRepository, accountMovementRepository, transferLimit);
+
         when(accountOrigin.getId()).thenReturn(ACCOUNT_ORIGIN_ID);
         when(accountTarget.getId()).thenReturn(ACCOUNT_TARGET_ID);
         when(accountRepository.findByIdAndLockEntity(any()))
@@ -76,20 +82,12 @@ class MovementDomainServiceTest {
         if (areAccountsOriginAndTargetEquals || !hasSufficientFunds) {
             final long accountTargetId =
                     areAccountsOriginAndTargetEquals ? ACCOUNT_ORIGIN_ID : ACCOUNT_TARGET_ID;
-            lenient().when(accountOrigin.getId()).thenReturn(ACCOUNT_ORIGIN_ID);
             lenient().when(accountTarget.getId()).thenReturn(accountTargetId);
             lenient().when(accountOrigin.getBalance()).thenReturn(BigDecimal.ZERO);
 
-            final var accountMovementCaptor = ArgumentCaptor.forClass(AccountMovement.class);
-            try {
-                movementDomainService.transferFunds(accountMovement);
-
-            } catch (RuntimeException e) {
-                assertEquals(e.getClass(), expectedExceptionClass);
-                verify(accountMovementRepository).saveAndFlush(accountMovementCaptor.capture());
-                assertNotNull(accountMovementCaptor.getValue());
-                assertFalse(accountMovementCaptor.getValue().getSuccess());
-            }
+            executeTransferAndValidateErrorHandler(expectedExceptionClass);
+        } else if (transferLimit.compareTo(accountMovement.getValue()) < 0) {
+            executeTransferAndValidateErrorHandler(expectedExceptionClass);
 
         } else {
             when(accountOrigin.getBalance()).thenReturn(TRANSFER_AMOUNT);
@@ -121,10 +119,28 @@ class MovementDomainServiceTest {
         }
     }
 
+    private void executeTransferAndValidateErrorHandler(final Class<?> expectedExceptionClass) {
+        final var accountMovementCaptor = ArgumentCaptor.forClass(AccountMovement.class);
+        try {
+            movementDomainService.transferFunds(accountMovement);
+
+        } catch (RuntimeException e) {
+            assertEquals(e.getClass(), expectedExceptionClass);
+            verify(accountMovementRepository).save(accountMovementCaptor.capture());
+            assertNotNull(accountMovementCaptor.getValue());
+            assertFalse(accountMovementCaptor.getValue().getSuccess());
+        }
+    }
+
     static Stream<Arguments> getMovementArguments() {
         return Stream.of(
-                Arguments.of(true, false, TransferFundsToSameOriginException.class),
-                Arguments.of(false, false, InsufficientBalanceException.class),
-                Arguments.of(false, true, null));
+                Arguments.of(true, true, TRANSFER_LIMIT, TransferFundsToSameOriginException.class),
+                Arguments.of(false, false, TRANSFER_LIMIT, InsufficientBalanceException.class),
+                Arguments.of(false, true, TRANSFER_LIMIT, null),
+                Arguments.of(
+                        false,
+                        true,
+                        TRANSFER_AMOUNT.subtract(ONE),
+                        TransferLimitExceededException.class));
     }
 }

@@ -9,6 +9,8 @@ import javax.validation.constraints.PositiveOrZero;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +37,8 @@ import org.springframework.web.bind.annotation.RestController;
         consumes = APPLICATION_VND_V1)
 class MovementResource {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MovementResource.class);
+
     private static final String DEFAULT_PAGE = "0";
 
     static final String MOVEMENT_PATH = ACCOUNT_PATH + "/movements";
@@ -46,6 +50,7 @@ class MovementResource {
     @PostMapping
     ResponseEntity<TransferFundsResponse> transferFunds(
             @Validated @RequestBody TransferFundsRequest request) {
+        LOGGER.info("request={}", request);
         final var solicitation =
                 TransferFundsSolicitation.builder()
                         .accountOrigin(request.getAccountOrigin())
@@ -53,6 +58,8 @@ class MovementResource {
                         .amount(request.getAmount())
                         .build();
         movementApplicationService.requestTransferFunds(solicitation);
+
+        LOGGER.info("msg=Transfered successfully.");
 
         // Por questões de simplicidade o header location não será incluído.
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -65,6 +72,7 @@ class MovementResource {
             @RequestParam(value = "page", required = false, defaultValue = DEFAULT_PAGE)
                     @PositiveOrZero
                     final Integer page) {
+        LOGGER.info("accountNumber={}, page={}.", accountNumber, page);
         final var accountMovementsFound =
                 movementApplicationService.findByAccountNumber(accountNumber, page);
         return ResponseEntity.ok(accountMovementsFound.map(translator::toAccountMovementResponse));

@@ -6,8 +6,11 @@ import br.com.rmacario.itau.domain.customer.Customer;
 import br.com.rmacario.itau.domain.customer.CustomerRepository;
 import br.com.rmacario.itau.domain.customer.account.Account;
 import br.com.rmacario.itau.domain.customer.account.AccountRepository;
+import br.com.rmacario.itau.interfaces.customer.CustomerResource;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -25,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 public class CustomerApplicationService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CustomerResource.class);
 
     CustomerRepository customerRepository;
 
@@ -54,6 +59,8 @@ public class CustomerApplicationService {
         final var optionalAccount = accountRepository.findByNumber(customerData.getAccountNumber());
 
         if (optionalAccount.isPresent()) {
+            LOGGER.error(
+                    "msg=Account number [{}] already exists.", customerData.getAccountNumber());
             throw new AccountNumberAlreadyExistsException(customerData.getAccountNumber());
         }
 

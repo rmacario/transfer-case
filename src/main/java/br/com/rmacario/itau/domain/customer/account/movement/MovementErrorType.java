@@ -8,5 +8,7 @@ package br.com.rmacario.itau.domain.customer.account.movement;
 public enum MovementErrorType {
     INSUFFICIENT_FUNDS,
 
-    SAME_ORIGIN;
+    SAME_ORIGIN,
+
+    TRANSFER_LIMIT_EXCEEDED;
 }

@@ -28,4 +28,7 @@ app:
   repository:
     pagination:
       default-size: 15
+  domain:
+    movements:
+      transfer-limit-amount: 1000
 

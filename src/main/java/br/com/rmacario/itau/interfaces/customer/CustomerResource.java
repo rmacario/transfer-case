@@ -10,6 +10,8 @@ import javax.validation.constraints.PositiveOrZero;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -32,6 +34,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = CUSTOMER_PATH, produces = APPLICATION_VND_V1, consumes = APPLICATION_VND_V1)
 public class CustomerResource {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(CustomerResource.class);
+
     private static final String DEFAULT_PAGE = "0";
 
     public static final String CUSTOMER_PATH = "/customers";
@@ -42,6 +46,7 @@ public class CustomerResource {
 
     @PostMapping
     ResponseEntity<CustomerResponse> create(@Validated @RequestBody CustomerCreateRequest request) {
+        LOGGER.info("request={}.", request);
         final var customerCreateSolicitation =
                 customerDataTranslator.toCustomerCreateSolicitation(request);
         final var customer = customerApplicationService.create(customerCreateSolicitation);
@@ -55,6 +60,7 @@ public class CustomerResource {
             @RequestParam(value = "page", required = false, defaultValue = DEFAULT_PAGE)
                     @PositiveOrZero
                     final Integer page) {
+        LOGGER.info("page={}.", page);
         final var customersFound = customerApplicationService.findAllCustomersByPage(page);
         return ResponseEntity.ok(customersFound.map(customerDataTranslator::toCustomerResponse));
     }

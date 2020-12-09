@@ -11,6 +11,8 @@ import br.com.rmacario.itau.interfaces.customer.CustomerResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,6 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = ACCOUNT_PATH, produces = APPLICATION_VND_V1, consumes = APPLICATION_VND_V1)
 public class AccountResource {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccountResource.class);
+
     public static final String ACCOUNT_PATH = CUSTOMER_PATH + "/accounts";
 
     CustomerApplicationService customerApplicationService;
@@ -39,6 +43,7 @@ public class AccountResource {
     @GetMapping
     ResponseEntity<CustomerResponse> findByAccountNumber(
             @RequestParam(value = "number", required = false) final Long accountNumber) {
+        LOGGER.info("accountNumber={}.", accountNumber);
         final var customerFound = customerApplicationService.findByAccountNumber(accountNumber);
         return ResponseEntity.ok(customerDataTranslator.toCustomerResponse(customerFound));
     }
