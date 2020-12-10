@@ -123,7 +123,7 @@ class MovementApplicationServiceTest {
         final var accountMovementsFound = new PageImpl<>(List.of(accountMovement, accountMovement));
         when(accountMovementRepository.findByAccountNumberOrderByIdDesc(
                         ACCOUNT_NUMBER,
-                        PageRequest.of(PAGE, PAGINATION_PAGE_SIZE, Sort.by(DESC, "id"))))
+                        PageRequest.of(PAGE, PAGINATION_PAGE_SIZE, Sort.by(DESC, "createdAt"))))
                 .thenReturn(accountMovementsFound);
 
         final var result = movementApplicationService.findByAccountNumber(ACCOUNT_NUMBER, PAGE);

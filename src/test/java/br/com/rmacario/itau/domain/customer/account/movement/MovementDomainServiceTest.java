@@ -98,7 +98,7 @@ class MovementDomainServiceTest {
 
             final var accountCaptor = ArgumentCaptor.forClass(Account.class);
             movementDomainService.transferFunds(accountMovement);
-            verify(accountRepository, times(2)).save(accountCaptor.capture());
+            verify(accountRepository, times(2)).saveAndFlush(accountCaptor.capture());
 
             // Validando movimentações do usuário que está transferindo
             verify(accountOrigin).subtractBalance(accountMovement.getValue());
@@ -126,7 +126,7 @@ class MovementDomainServiceTest {
 
         } catch (RuntimeException e) {
             assertEquals(e.getClass(), expectedExceptionClass);
-            verify(accountMovementRepository).save(accountMovementCaptor.capture());
+            verify(accountMovementRepository).saveOnNewTransaction(accountMovementCaptor.capture());
             assertNotNull(accountMovementCaptor.getValue());
             assertFalse(accountMovementCaptor.getValue().getSuccess());
         }

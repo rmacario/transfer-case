@@ -10,5 +10,7 @@ public enum MovementErrorType {
 
     SAME_ORIGIN,
 
-    TRANSFER_LIMIT_EXCEEDED;
+    TRANSFER_LIMIT_EXCEEDED,
+
+    CONCURRENT_TRANSFER;
 }

@@ -16,6 +16,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Version;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -64,6 +65,8 @@ public class Account implements Serializable {
     @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
     List<AccountMovement> accountMovements;
+
+    @Version @ToString.Exclude Integer version;
 
     public void subtractBalance(@NonNull final BigDecimal amount) {
         this.balance = this.balance.subtract(amount);

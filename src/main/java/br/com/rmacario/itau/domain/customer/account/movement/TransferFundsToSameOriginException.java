@@ -9,7 +9,9 @@ public class TransferFundsToSameOriginException extends MovementBusinessExceptio
 
     private static final long serialVersionUID = -3922401745677919449L;
 
-    TransferFundsToSameOriginException() {
-        super(MovementErrorType.SAME_ORIGIN, "Conta destino inválida.");
+    TransferFundsToSameOriginException(final Long accountNumber) {
+        super(
+                MovementErrorType.SAME_ORIGIN,
+                String.format("Conta destino [%s] inválida.", accountNumber));
     }
 }

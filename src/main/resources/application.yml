@@ -23,6 +23,7 @@ spring:
 logging:
   level:
     org.hibernate.SQL: DEBUG
+    org.springframework.transaction: TRACE
 
 app:
   repository:

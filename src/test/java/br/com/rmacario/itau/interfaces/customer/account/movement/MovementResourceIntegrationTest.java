@@ -151,7 +151,7 @@ class MovementResourceIntegrationTest {
                 assertEquals(1, accountMovementRepository.findAll().size());
 
             } else {
-                final var response = doRequest(accountOrigin, accountTarget, BALANCE);
+                final var response = doRequest(accountOrigin, accountTarget, ONE);
                 assertEquals(httpStatus, response.getStatusCode());
                 assertEquals(2, accountMovementRepository.findAll().size());
             }

@@ -81,6 +81,6 @@ public class MovementApplicationService {
     public Page<AccountMovement> findByAccountNumber(
             @NonNull final Long accountNumber, @NonNull final Integer page) {
         return accountMovementRepository.findByAccountNumberOrderByIdDesc(
-                accountNumber, PageRequest.of(page, defaultPageSize, Sort.by(DESC, "id")));
+                accountNumber, PageRequest.of(page, defaultPageSize, Sort.by(DESC, "createdAt")));
     }
 }
